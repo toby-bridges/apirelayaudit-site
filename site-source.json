@@ -8,10 +8,13 @@
   },
   "evidence": {
     "path": "evidence/registry.json",
-    "commit": null,
-    "state": "pending_core_migration",
+    "commit": "3af7126a34d099f65031c6e3af63b302a843fe59",
+    "state": "reviewed_public_snapshot",
+    "source_url": "https://raw.githubusercontent.com/toby-bridges/api-relay-audit/3af7126a34d099f65031c6e3af63b302a843fe59/evidence/registry.json",
+    "source_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
     "snapshot": "web/data/evidence.json",
-    "snapshot_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    "snapshot_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "record_count": 0
   },
   "public_boundary": "Website files and reviewed public evidence only. No internal planning, owner metrics, raw reports, credentials or personal paths."
 }
