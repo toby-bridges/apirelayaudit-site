@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://apirelayaudit.com/sitemap.xml

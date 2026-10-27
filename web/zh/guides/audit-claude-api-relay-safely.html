@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中转 API 首次本地审计上手指南：Claude Code 与 Codex 接入前验证</title>
+<meta name="description" content="面向准备将第三方中转 API 接入 Claude Code 或 Codex 的开发者，基于 API Relay Audit v2.5.0 提供首次本地审计操作说明，涵盖环境依赖、连通性检查、缩小范围探针与报告脱敏。">
+<link rel="canonical" href="https://apirelayaudit.com/zh/guides/audit-claude-api-relay-safely.html">
+<link rel="alternate" hreflang="zh-CN" href="https://apirelayaudit.com/zh/guides/audit-claude-api-relay-safely.html">
+<link rel="alternate" hreflang="en" href="https://apirelayaudit.com/guides/audit-claude-api-relay-safely.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="API Relay Audit">
+<meta property="og:title" content="中转 API 首次本地审计上手指南：Claude Code 与 Codex 接入前验证">
+<meta property="og:description" content="面向准备将第三方中转 API 接入 Claude Code 或 Codex 的开发者，基于 API Relay Audit v2.5.0 提供首次本地审计操作说明，涵盖环境依赖、连通性检查、缩小范围探针与报告脱敏。">
+<meta property="og:url" content="https://apirelayaudit.com/zh/guides/audit-claude-api-relay-safely.html">
+<meta property="og:image" content="https://apirelayaudit.com/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../../assets/content.css">
+<style>.guide-body{overflow-wrap:anywhere}.guide-body pre{white-space:pre;overflow:auto}</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "中转 API 首次本地审计上手指南", "description": "面向准备将第三方中转 API 接入 Claude Code 或 Codex 的开发者，基于 API Relay Audit v2.5.0 提供首次本地审计操作说明，涵盖环境依赖、连通性检查、缩小范围探针与报告脱敏。", "inLanguage": "zh-CN", "dateModified": "2026-10-27", "mainEntityOfPage": "https://apirelayaudit.com/zh/guides/audit-claude-api-relay-safely.html", "publisher": {"@type": "Organization", "name": "API Relay Audit"}}</script>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="../../">API Relay Audit</a><div class="links"><a href="../">中文首页</a><a href="../../guides/audit-claude-api-relay-safely.html">English guide</a><a href="../compare-relay-tools.html">工具对比</a></div></div></header>
+<main class="wrap guide-body">
+  <div class="eyebrow">中文上手指南 · <time datetime="2026-10-27">2026-10-27</time></div>
+  <h1>中转 API 首次本地审计上手指南</h1>
+  <p class="lead">在将第三方中转端点写入 Claude Code 或 Codex 等编码工具前，先在本地执行分阶段探针，整理一份可复核的基线记录，并在外发前完成报告脱敏。</p>
+  <h2>第一阶段：检查本地环境与依赖工具</h2><p>执行审计前，先确认当前系统已具备 Python 与 curl 运行环境。该脚本依赖 Python 3.10 或更新版本，以及系统可用的 <code>curl</code> 命令行工具。读者可在终端分别运行 <code>python3 --version</code> 与 <code>curl --version</code> 查看版本信息。本文固定对应脚本版本 v2.5.0（Git commit <a href="https://github.com/toby-bridges/api-relay-audit/blob/75bdac000051871c9f088a3be58e6f17a8854ffb/audit.py">75bdac000051871c9f088a3be58e6f17a8854ffb</a>，核对日期 2026-10-27）。</p><h2 id="download">第二阶段：获取固定脚本与启动验证</h2><p>下载脚本会访问 GitHub 域名。下载完成后，先运行帮助命令核对脚本能否正常加载：</p><pre class="code"><code>curl -fsSL https://raw.githubusercontent.com/toby-bridges/api-relay-audit/75bdac000051871c9f088a3be58e6f17a8854ffb/audit.py -o audit.py
+python3 audit.py --help</code></pre><p><code>--help</code> 成功退出仅说明脚本在当前 Python 环境下可以启动，并不验证系统中 curl 的可用性、网络连通性、后端真实模型或端点安全性。该步骤不会连接中转端点，也不需要提供 API Key。</p><h2>第三阶段：准备测试密钥并注入环境变量</h2><p>请先在中转服务商后台准备一个专用、低额度、随时可撤销的测试 Key，不要直接使用生产密钥。由读者通过本地已有的秘密管理方式，将测试密钥注入环境变量 <code>API_RELAY_AUDIT_KEY</code>；禁止在命令行示例或脚本中写入真实密钥。系统密钥环或密码管理器不会自动替你设置环境变量，需由读者显式配置到当前运行会话。</p><p>使用 <code>--key-env</code> 时请厘清其运行边界：<code>--key-env</code> 让 <code>audit.py</code> 主命令行参数接收变量名，不必将密钥值写在该命令里，但子进程及其他数据面并未获得免泄漏保证；实际发起探针请求时，该密钥仍会发送给指定的中转站。此外，该版本的独立传输实现直接调用 <code>curl -sk</code>，参数显式关闭了 TLS 证书完整性校验，因此即使通信成功，也不能证明远端服务器的真实身份。传输细节可查阅 <a href="https://github.com/toby-bridges/api-relay-audit/blob/75bdac000051871c9f088a3be58e6f17a8854ffb/api_relay_audit/_transport.py#L72">_transport.py 源码</a>。</p><h2>第四阶段：执行低开销连通性测试</h2><p>在发起多项探针前，先确认中转端点能否响应基础调用：</p><pre class="code"><code>python3 audit.py --key-env API_RELAY_AUDIT_KEY \
+  --url https://relay.example.com/v1 --model YOUR_SUPPORTED_MODEL \
+  --connectivity --output connectivity.md</code></pre><p>命令中的 <code>https://relay.example.com/v1</code> 与 <code>YOUR_SUPPORTED_MODEL</code> 为示意占位符，执行时替换为读者实际获得授权的中转地址与支持的模型代号。根据 <a href="https://github.com/toby-bridges/api-relay-audit/blob/75bdac000051871c9f088a3be58e6f17a8854ffb/api_relay_audit/connectivity.py#L1">connectivity.py 源码</a>，该命令会分别使用 Anthropic Chat 与 OpenAI Chat 格式发送两个低输出预算请求。目标中转站会处理这两次真实请求并可能计费。该检查仅测试接口连通状态，该命令默认生成 Markdown 连通性报告，不作安全评级；选择 JSON 输出时，<code>risk_level</code> 字段为 <code>null</code>。</p><h2>第五阶段：运行缩小范围审计与控制探针</h2><p>连通性确认后，推荐先运行跳过外围搜集与大上下文的缩小范围命令：</p><pre class="code"><code>python3 audit.py --key-env API_RELAY_AUDIT_KEY \
+  --url https://relay.example.com/v1 --model YOUR_SUPPORTED_MODEL \
+  --skip-infra --skip-context --output relay-audit.md</code></pre><p>缩小范围审计显式保留了两项跳过规则：</p><ul><li><code>--skip-infra</code>：跳过 Step 1 基础设施侦察。若不加此参数，脚本默认会发起 DNS、WHOIS、证书与 HTTP 查询，因此默认审计不是只连接单一中转端点。</li><li><code>--skip-context</code>：跳过 Step 7 上下文测试，减少这部分请求与 Token 消耗。</li></ul><p>所选 profile 下，其他未跳过的网络探针仍会发出真实 API 请求，并可能产生计费。其中错误探测会向端点发送故意构造的畸形请求，以观察上游返回的错误格式；如果中转方不允许畸形请求探测，可追加 <code>--skip-error-leakage</code> 参数，并在审计记录中注明该项覆盖已减少。</p><p>去除这两项跳过参数并不等同于运行所有探针，默认 general 配置中并不包含 Web3 专属检查。</p><p>如需评估上下文，可选参数 <code>--fast-context</code> 会使用 10K、50K、100K、200K 字符（非 Token 数）作为初始阶梯并做边界细化，使用时需用其替换 <code>--skip-context</code>，同时保留两项时，Step 7 仍会被跳过。</p><p>v2.5.0 的 Step 8 仅比对 4 条安装命令的文本回显，并不在本地执行命令，也不验证结构化 tool_calls 或流式参数重组，实现参见 <a href="https://github.com/toby-bridges/api-relay-audit/blob/75bdac000051871c9f088a3be58e6f17a8854ffb/api_relay_audit/tool_substitution.py#L1">tool_substitution.py 源码</a>。</p><p>默认命令仅输出 Markdown 报告，若需机器可读数据可在一行内追加 <code>--format json</code>。</p><h2>第六阶段：解读风险指标并完成外发脱敏</h2><p>阅读生成的审计报告时，应结合检查明细采取对应处理动作：</p><ul><li><strong>分级含义与后续动作</strong>：LOW、MEDIUM、HIGH 是本次已运行探针的风险汇总，结合了协议校验、文本比对与启发式信号。LOW 是风险矩阵给出的较低汇总等级，不代表所有检查均已通过，也不是安全认证；仍需通读各项明细；MEDIUM 与 HIGH 需要先看具体异常段落与证据再做人工复核；标注为 skip 或 inconclusive 的项代表未测或无法确定，不能当成测试通过，应在记录原因后视情况排查复跑。</li><li><strong>信号需交叉验证</strong>：返回的 Token 偏差、模型自我介绍以及 JSON 响应里的 <code>model</code> 字段均属于需要交叉核对的线索，不能单独作为上游模型归属或恶意行为的判定依据，交叉核对方式见 <a href="../../guides/audit-claude-api-relay-safely.html#signal-interpretation">英文指南的信号解释</a>。</li><li><strong>历史样例边界</strong>：仓库中的 <a href="https://github.com/toby-bridges/api-relay-audit/blob/75bdac000051871c9f088a3be58e6f17a8854ffb/docs/examples/sanitized-audit-report.md">sanitized-audit-report.md</a> 是历史 v2.3 的离线合成样例，它与网页里的 runpy 文本比较器演示是不同对象，两者均不是真实中转站的实测数据。</li></ul><p>本地生成的 Markdown 和 JSON 报告不会自动完成公共脱敏，正文可能包含私有中转地址、响应文本或特征证据。在将文件提交至公共仓库、工单或社区前，必须人工审阅并抹去敏感信息。</p>
+  <div class="cta"><a class="button primary" href="#download">查看下载与帮助命令</a></div>
+</main>
+<footer><div class="wrap">API Relay Audit · <a href="../">中文首页</a> · <a href="../compare-relay-tools.html">中转站工具怎么选</a> · <a href="../../guides/audit-claude-api-relay-safely.html">English guide</a></div></footer>
+</body>
+</html>

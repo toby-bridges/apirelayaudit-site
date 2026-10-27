@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中转站工具怎么选：禾维 AI、Veridrop、API Relay Audit 各回答什么</title>
+<meta name="description" content="三类 AI API 中转站工具各回答一个问题：禾维 AI 帮你圈候选站，Veridrop 帮你验真伪与能力，API Relay Audit 在本地审路上有没有人动手脚。并列引用两家的公开页面，附来源与日期。">
+<link rel="canonical" href="https://apirelayaudit.com/zh/compare-relay-tools.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="API Relay Audit">
+<meta property="og:title" content="中转站工具怎么选：禾维 AI、Veridrop、API Relay Audit 各回答什么">
+<meta property="og:description" content="先用禾维 AI 圈候选，再用 Veridrop 验真伪与能力，最后用 API Relay Audit 在本地审安全层。三者互补，不互相替代。">
+<meta property="og:url" content="https://apirelayaudit.com/zh/compare-relay-tools.html">
+<meta property="og:image" content="https://apirelayaudit.com/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../assets/content.css">
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="../">API Relay Audit</a><div class="links"><a href="./">中文首页</a><a href="../">English</a><a href="../guides/compare-api-relay-audit-hvoy-cctest.html">English comparison</a><a href="https://github.com/toby-bridges/api-relay-audit">GitHub</a></div></div></header>
+<main class="wrap">
+  <div class="eyebrow">工具怎么选 · 2026-10-26</div>
+  <h1>中转站工具怎么选：三类工具各回答一个问题</h1>
+  <p class="lead">买一家 AI API 中转站之前，你其实在问三个问题：哪几家值得看、它给的是不是真模型、路上有没有人动我的请求。禾维 AI、Veridrop 和 API Relay Audit 各答一个，谁也替代不了谁。本页把两家的公开说法原样引出来，附链接和日期，由你自己核对。</p>
+
+  <h2 id="quick">30 秒结论</h2>
+  <table>
+    <tr><th>你想知道</th><th>去哪</th><th>看什么</th></tr>
+    <tr><td>哪几家中转站值得放进候选</td><td><a href="https://www.hvoyai.com/">禾维 AI</a></td><td>按模型分的实测榜单里的在线率、延迟、输入价格，和站点档案</td></tr>
+    <tr><td>这家给我的是不是它声称的模型，高级能力有没有被剥离</td><td><a href="https://veridrop.org/">Veridrop</a></td><td>每次检测的公开报告，和按域名聚合的红黑榜</td></tr>
+    <tr><td>路上有没有人往我的请求里塞东西、改我的工具调用、把 key 漏在报错里</td><td>API Relay Audit（本站）</td><td>你自己机器上跑出来的审计报告；<code>inconclusive</code> 单列，不并入 clean</td></tr>
+  </table>
+  <p class="note">顺序建议：先用禾维 AI 圈 3 到 5 家候选，再到 Veridrop 对每家跑一次真伪与能力检测，最后把剩下的用 API Relay Audit 在本地审一遍安全层，再决定充值和接入 agent。</p>
+
+  <h2 id="dimensions">逐维度对比</h2>
+  <p>两家的内容均取自其公开页面，抓取日期 2026-10-26，页面若更新以其官网为准。方括号里的编号对应文末来源。</p>
+  <table>
+    <tr><th>维度</th><th>禾维 AI（hvoyai.com）</th><th>Veridrop（veridrop.org）</th><th>API Relay Audit（本站）</th></tr>
+    <tr><td>回答的问题</td><td>选哪家：中转站推荐、排名与测评，附 API 真假检测 [1]</td><td>是不是真的：中转站真伪、能力、协议合规三问 [4]</td><td>路上有没有人动手脚：提示注入、工具调用改写、报错泄露、流完整性、钱包探针</td></tr>
+    <tr><td>公开给你看的结果</td><td>按模型分的实测榜单（在线率、延迟、输入价格）、站点档案页、人工评测 [1][2]</td><td>每份检测的公开报告 URL、按域名聚合的红黑榜与中位分 [5][12]</td><td>本地生成的 Markdown 或 JSON 报告；社区证据登记处在建，目前没有已发布条目 [9]</td></tr>
+    <tr><td>检测口径（原文）</td><td>"主要检查接口连通性、响应特征、延迟和模型一致性信号" [1]</td><td>Claude 12 项、OpenAI 8 项、Gemini 7 项，含 thinking 签名、长上下文、工具调用能力、用量合理性 [4]</td><td>14 步。其中隐藏注入、提示词抽取、指令覆盖、越狱与角色冒充、包名替换、报错泄露、Web3 注入这一层，两家的公开口径里都没有</td></tr>
+    <tr><td>运行方式</td><td>在线站；"API 鉴定"需填入 API 地址、Key 和模型 [1]</td><td>在线站，自述"免费、无需注册、API key 不落盘"；也可自托管 [4]</td><td>本地单文件脚本，也作为 agent skill 和 DSH 插件使用；你的 key 只发给你指定的中转站 URL</td></tr>
+    <tr><td>开源</td><td>GitHub 仓库 zzsting88/relayAPI 是检测前端与推荐榜 README [3]</td><td>AGPL-3.0；线上站的商务合作、站长注册、赞助位这一层不在仓库里 [4][6]</td><td>AGPL-3.0，全部在仓库里</td></tr>
+    <tr><td>商业模式（原文）</td><td>站长协议自述"禾维 AI 是广告与信息展示平台"；收录、排名、徽章、赞助位、置顶"可能属于广告或商业展示"；有会员费 [2]</td><td>FAQ 列三条收入：联盟佣金、收录与站长后台套餐、模型级赞助位与 Top 10 精选位，"均明确标识为付费展示"；首页自述"付费不改检测分与红黑榜" [7][8][12]</td><td>目前没有付费展示位。无论将来是否出现付费项目，规则不变：价目公开、不改任何检测结果、不接受付费下架、付费展示一律标注</td></tr>
+    <tr><td>价目</td><td>未公开；站长后台需登录 [2]</td><td>未公开；收录与赞助走商务联系 [6]</td><td>无付费项目</td></tr>
+  </table>
+
+  <h2 id="cite">两家的公开结果，我们怎么并列引用</h2>
+  <p>三者回答的问题不同，互相补充，不互相替代。社区证据登记处的每一条，发布时会同时给出：</p>
+  <ul>
+    <li>被审域名、审计日期、代码 commit，以及脱敏后的原始记录；</li>
+    <li>Veridrop 按域名的红黑榜页（<code>veridrop.org/leaderboard/&lt;域名&gt;</code>）和禾维 AI 的站点档案页（<code>hvoyai.com/sites/&lt;域名去掉点&gt;/</code>）的链接，仅在两家对该域名确有页面时给出；</li>
+    <li>一句说明：他们答"是不是真模型、能力全不全"和"在线率、延迟、价格怎么样"，我们答"路上有没有人动手脚"。</li>
+  </ul>
+  <p>登记处目前没有已发布条目。提交与站长回应流程见 <a href="https://github.com/toby-bridges/api-relay-audit/blob/master/docs/community-evidence.md">community-evidence.md</a>。</p>
+
+  <h2 id="they-say">他们怎么说对方</h2>
+  <p>Veridrop 的对比页写："用 hvoy 比价、找候选站，用 Veridrop 做买前真伪核验" [10]，和本页的顺序建议一致。Veridrop 另有一页中转站检测工具横评，收录 11 款工具，其中没有 API Relay Audit [11]。禾维 AI 的首页与站长协议里没有提到 Veridrop，也没有提到本站 [1][2]。</p>
+
+  <h2 id="limits">边界</h2>
+  <ul>
+    <li>本页不推荐任何中转站，也不为任何中转站颁发安全认证。</li>
+    <li>两家的检测次数、收录数量等规模数字为其自述，本站未复核，因此不在本页转述。</li>
+    <li>对两家的描述均附原文链接。若你发现与其官网不一致，请在 <a href="https://github.com/toby-bridges/api-relay-audit/issues">GitHub issue</a> 里指出，本页会标日期更正。</li>
+  </ul>
+
+  <div class="cta"><a class="button primary" href="../#install">生成本地审计命令</a><a class="button" href="../guides/compare-api-relay-audit-hvoy-cctest.html">English comparison</a></div>
+
+  <h2 id="sources">来源</h2>
+  <ol>
+    <li>禾维 AI 首页与常见问题：<a href="https://www.hvoyai.com/">hvoyai.com</a>，2026-10-26</li>
+    <li>禾维 AI 站长用户协议（页面标注最后更新 2026-05-19）：<a href="https://www.hvoyai.com/partner/terms/">hvoyai.com/partner/terms/</a>，2026-10-26</li>
+    <li>relayAPI 仓库：<a href="https://github.com/zzsting88/relayAPI">github.com/zzsting88/relayAPI</a>，2026-10-26</li>
+    <li>Veridrop README（检测维度、使用方式、开源范围）：<a href="https://github.com/canarybyte/veridrop">github.com/canarybyte/veridrop</a>，2026-10-26</li>
+    <li>Veridrop 红黑榜：<a href="https://veridrop.org/leaderboard">veridrop.org/leaderboard</a>，2026-10-26</li>
+    <li>Veridrop 商务合作：<a href="https://veridrop.org/business">veridrop.org/business</a>，2026-10-26</li>
+    <li>Veridrop 联盟透明度：<a href="https://veridrop.org/about/affiliate">veridrop.org/about/affiliate</a>，2026-10-26</li>
+    <li>Veridrop 常见问题（收入来源）：<a href="https://veridrop.org/faq">veridrop.org/faq</a>，2026-10-26</li>
+    <li>API Relay Audit 社区证据流程：<a href="https://github.com/toby-bridges/api-relay-audit/blob/master/docs/community-evidence.md">docs/community-evidence.md</a></li>
+    <li>Veridrop vs 禾维 AI 对比页：<a href="https://veridrop.org/compare/veridrop-vs-hvoy">veridrop.org/compare/veridrop-vs-hvoy</a>，2026-10-26</li>
+    <li>Veridrop 中转站检测工具横评：<a href="https://veridrop.org/compare/relay-detectors">veridrop.org/compare/relay-detectors</a>，2026-10-26</li>
+    <li>Veridrop 首页：<a href="https://veridrop.org/">veridrop.org</a>，2026-10-26</li>
+  </ol>
+</main>
+<footer><div class="wrap">相关：<a href="./">中文首页</a> · <a href="../guides/compare-api-relay-audit-hvoy-cctest.html">English comparison</a> · <a href="../guides/audit-claude-api-relay-safely.html">How to audit a Claude API relay safely</a></div></footer>
+</body>
+</html>

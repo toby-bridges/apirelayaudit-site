@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Relay Audit - AI API 中转站安全审计</title>
+<meta name="description" content="本地审计 AI API 中转站和 LLM proxy，把 API relay audit、prompt injection audit、model substitution signals 和 Web3 relay audit 拆成清晰查询意图。">
+<link rel="canonical" href="https://apirelayaudit.com/zh/">
+<link rel="alternate" hreflang="en" href="https://apirelayaudit.com/">
+<link rel="alternate" hreflang="zh-CN" href="https://apirelayaudit.com/zh/">
+<link rel="alternate" hreflang="x-default" href="https://apirelayaudit.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="API Relay Audit - AI API 中转站安全审计">
+<meta property="og:description" content="本地审计 AI API 中转站和 LLM proxy，并为 relay、prompt injection、model substitution signals 和 Web3 profile 保持清晰证据边界。">
+<meta property="og:url" content="https://apirelayaudit.com/zh/">
+<meta property="og:image" content="https://apirelayaudit.com/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../assets/content.css">
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="../">API Relay Audit</a>
+    <div class="links">
+      <a href="../">English</a>
+      <a href="../guides/what-is-ai-api-relay-proxy.html">Guides</a>
+      <a href="https://github.com/toby-bridges/api-relay-audit">GitHub</a>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <div class="eyebrow">Local AI API Relay Security Audit</div>
+  <h1>接入中转 API 前的本地安全审计</h1>
+  <p class="lead">在把第三方中转端点接入编码工具前，先在本地整理出可复核的基线报告。执行探针时密钥仍会发给目标中转站，报告给出的风险汇总也不构成任何安全认证。</p>
+  <div class="cta">
+    <a class="button primary" href="guides/audit-claude-api-relay-safely.html">阅读中文上手指南</a>
+    <a class="button" href="https://github.com/toby-bridges/api-relay-audit">查看 GitHub</a>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>什么时候用</h2>
+      <p>当你准备把第三方 AI API 中转站、Claude/OpenAI 兼容代理、coding agent 自动化或钱包相关流量放进生产环境前，用它生成一份可复查的 Markdown 报告。</p>
+    </section>
+    <section class="card">
+      <h2>检测什么</h2>
+      <p>覆盖 token injection、prompt extraction、identity consistency signals、context truncation、tool-call rewriting、error leakage、SSE stream integrity 和 Web3 signature isolation probes。</p>
+    </section>
+    <section class="card">
+      <h2>不声称什么</h2>
+      <p>它不为任何中转站颁发安全认证，也不替代人工安全审查。`inconclusive` 不是 `clean`，被拦截或无法判断的探针会保留在报告里。</p>
+    </section>
+  </div>
+
+  <h2>查询意图边界</h2>
+  <div class="grid">
+    <section class="card">
+      <h2>API relay audit</h2>
+      <p>审计第三方中转站、镜像、网关、LLM proxy 或 resale API；默认使用 <code>general</code> profile。</p>
+    </section>
+    <section class="card">
+      <h2>Prompt injection audit</h2>
+      <p>检测隐藏 prompt 注入、prompt 泄漏、指令覆盖和提取行为；主要覆盖 Step 3-6。</p>
+    </section>
+    <section class="card">
+      <h2>Model substitution signals</h2>
+      <p>收集 self-ID、stream、latency 和 channel fingerprint 信号，但这些信号不能单独证明 provider 替换。</p>
+    </section>
+    <section class="card">
+      <h2>Web3 relay audit</h2>
+      <p>钱包敏感场景使用 <code>--profile web3</code> 或 <code>--profile full</code>，Step 11 是 profile-gated。</p>
+    </section>
+  </div>
+
+  <h2>快速开始</h2>
+  <pre class="code"><code>curl -fsSL https://raw.githubusercontent.com/toby-bridges/api-relay-audit/75bdac000051871c9f088a3be58e6f17a8854ffb/audit.py -o audit.py
+python3 audit.py --help</code></pre>
+  <p>通过六个操作阶段，完成依赖检查、连通性探测、缩小范围审计与报告脱敏复核。 <a href="guides/audit-claude-api-relay-safely.html">查看完整中文步骤</a></p>
+
+  <h2>长尾阅读</h2>
+  <ul>
+    <li><a href="guides/audit-claude-api-relay-safely.html">中转 API 首次本地审计上手指南</a></li>
+    <li><a href="compare-relay-tools.html">中转站工具怎么选：禾维 AI、Veridrop、API Relay Audit 各回答什么</a></li>
+    <li><a href="../guides/what-is-ai-api-relay-proxy.html">What is an AI API relay or LLM proxy?</a></li>
+    <li><a href="../guides/audit-claude-api-relay-safely.html">How to audit a Claude API relay safely</a></li>
+    <li><a href="../guides/compare-api-relay-audit-hvoy-cctest.html">api-relay-audit vs hvoy.ai vs cctest.ai</a></li>
+    <li><a href="../guides/detect-prompt-injection-llm-api-proxies.html">Detecting prompt injection in LLM API proxies</a></li>
+    <li><a href="../guides/web3-wallet-prompt-injection-ai-agents.html">Web3 wallet prompt injection through AI agents</a></li>
+    <li><a href="../guides/deepseek-harness-plugin-api-relay-audit.html">DeepSeek Harness plugin for relay audits</a></li>
+  </ul>
+</main>
+<footer>
+  <div class="wrap">AGPL-3.0-only. Threat model: <a href="https://arxiv.org/abs/2604.08407">arXiv:2604.08407</a>.</div>
+</footer>
+</body>
+</html>

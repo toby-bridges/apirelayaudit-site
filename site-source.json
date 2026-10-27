@@ -1,0 +1,17 @@
+{
+  "site_url": "https://apirelayaudit.com/",
+  "tool_repository": "toby-bridges/api-relay-audit",
+  "release": {
+    "version": "2.5.0",
+    "commit": "75bdac000051871c9f088a3be58e6f17a8854ffb",
+    "audit_sha256": "fd99409bf745090a26bb4616fd33fbe0d873de08cfe077df413b2b93845f151d"
+  },
+  "evidence": {
+    "path": "evidence/registry.json",
+    "commit": null,
+    "state": "pending_core_migration",
+    "snapshot": "web/data/evidence.json",
+    "snapshot_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "public_boundary": "Website files and reviewed public evidence only. No internal planning, owner metrics, raw reports, credentials or personal paths."
+}

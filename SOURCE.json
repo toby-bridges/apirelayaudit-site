@@ -1,0 +1,39 @@
+{
+  "source_repository": "https://github.com/toby-bridges/api-relay-audit",
+  "source_base_commit": "d261bcc196c43dfd072ae24210dd57870399437b",
+  "existing_website_commits": [
+    "0829ffcbd4404de9bef6e4017ee9f4da175b44ba",
+    "bd359490ee0a8c6be177f7789fe13dd653388bd6"
+  ],
+  "adaptation": "Includes the reviewed Chinese onboarding guide, current-domain metadata and reciprocal language links prepared for this migration.",
+  "license": "AGPL-3.0-only; original LICENSE retained",
+  "imported_files_sha256": {
+    "web/assets/content.css": "888925284a78db13fbb7541de4444fc998f9b8307c72491be6640ce4b9963cbb",
+    "web/assets/social-preview.png": "e770c46699dcb40380291c5b67e6be15702669d2210f1be7d7cec2e6aeee54d1",
+    "web/data/relays/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "web/data/reports/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "web/data-example.json": "070f259614989f3a118262579e2d8066b45891522a940fb96962e6ce053785d7",
+    "web/guides/audit-claude-api-relay-safely.html": "ecf88e5d83630a260672d769d5a7281faba32a928734ead9e25ff66f3e8df25c",
+    "web/guides/compare-api-relay-audit-hvoy-cctest.html": "c30e91be1a16b4981ff5fda616c08a5c709b4dbb9f1da865c16be27b16b10898",
+    "web/guides/deepseek-harness-plugin-api-relay-audit.html": "ef24bf65e97d966cfdc49b72f5e60b7ddbedfbe391e1bf8d7ae39c028009c02a",
+    "web/guides/detect-prompt-injection-llm-api-proxies.html": "266d150a7a30cb104b620577dc657cdacf0e8c2b14d7b6f1f30ebb8986aa30f5",
+    "web/guides/openclaw-hermes-skill-api-relay-audit.html": "245c8a27d38401ea0542d3eff26f924cf56994fa3b7b38b226767ada5f2b90ea",
+    "web/guides/web3-wallet-prompt-injection-ai-agents.html": "47e74d1be276bc410918f8a4501081a402169ec7c12f442d86e19bd288f49526",
+    "web/guides/what-is-ai-api-relay-proxy.html": "871ad5d9aa4f5779f7d40eccba566dcd6936769697b84002c57bf0b38edb72b4",
+    "web/index.html": "1e08eea0840badcfb9cbf12fe79271a3f077e1c18f51be21732aec58e7d5b344",
+    "web/robots.txt": "3fdf5c70aa0d0dce7860c7fd87be3ac888b16953977629a6c6ddd08f134b1b90",
+    "web/sitemap.xml": "c0fd1aa95b47af05bc8d25c72c4b152247680e5924616e37ce48cb310cc778b4",
+    "web/zh/compare-relay-tools.html": "c4c031c812753030367397c5ec34dffdd830025a23f8bd064a89b324b92697d5",
+    "web/zh/guides/audit-claude-api-relay-safely.html": "31539c2541523b2bd67bc250ec15d2ba61720a0f0972db8799c4f0f38e4e718d",
+    "web/zh/index.html": "7a9427e4739aedd8c611036e6f0c49415a435113b16141c1fd523fa50c432275"
+  },
+  "migration_adaptations": [
+    {
+      "path": "web/guides/what-is-ai-api-relay-proxy.html",
+      "reason": "Fix a mutable raw audit download URL to the declared published v2.5.0 commit; no prose or public URL-path changes.",
+      "imported_sha256": "871ad5d9aa4f5779f7d40eccba566dcd6936769697b84002c57bf0b38edb72b4",
+      "adapted_sha256": "98a5a1c25445dac2920ed0c813bbbf5214c80c3bc59d493e1620fa90785c6529",
+      "tool_commit": "75bdac000051871c9f088a3be58e6f17a8854ffb"
+    }
+  ]
+}
