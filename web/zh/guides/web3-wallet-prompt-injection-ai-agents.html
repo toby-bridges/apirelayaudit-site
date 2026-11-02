@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web3 钱包场景：AI agent 经过中转站时的提示注入</title>
+<meta name="description" content="AI agent 在执行钱包相关动作前如果经过 API 中转站，中转站可能干扰转账指引、削弱签名隔离或引导私钥处理。本文说明威胁模型、怎样用 web3 profile 跑本地探针，以及这些探针不能证明什么。">
+<link rel="canonical" href="https://apirelayaudit.com/zh/guides/web3-wallet-prompt-injection-ai-agents.html">
+<link rel="alternate" hreflang="zh-CN" href="https://apirelayaudit.com/zh/guides/web3-wallet-prompt-injection-ai-agents.html">
+<link rel="alternate" hreflang="en" href="https://apirelayaudit.com/guides/web3-wallet-prompt-injection-ai-agents.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="API Relay Audit">
+<meta property="og:title" content="Web3 钱包场景：AI agent 经过中转站时的提示注入">
+<meta property="og:description" content="AI agent 在执行钱包相关动作前如果经过 API 中转站，中转站可能干扰转账指引、削弱签名隔离或引导私钥处理。本文说明威胁模型、怎样用 web3 profile 跑本地探针，以及这些探针不能证明什么。">
+<meta property="og:url" content="https://apirelayaudit.com/zh/guides/web3-wallet-prompt-injection-ai-agents.html">
+<meta property="og:image" content="https://apirelayaudit.com/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../../assets/content.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Web3 钱包场景：AI agent 经过中转站时的提示注入", "description": "AI agent 在执行钱包相关动作前如果经过 API 中转站，中转站可能干扰转账指引、削弱签名隔离或引导私钥处理。本文说明威胁模型、怎样用 web3 profile 跑本地探针，以及这些探针不能证明什么。", "inLanguage": "zh-CN", "dateModified": "2026-10-30", "mainEntityOfPage": "https://apirelayaudit.com/zh/guides/web3-wallet-prompt-injection-ai-agents.html", "publisher": {"@type": "Organization", "name": "API Relay Audit"}}</script>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="../../">API Relay Audit</a><div class="links"><a href="../">中文首页</a><a href="audit-claude-api-relay-safely.html">上手指南</a><a href="../compare-relay-tools.html">工具对比</a><a href="../../guides/web3-wallet-prompt-injection-ai-agents.html">English</a><a href="https://github.com/toby-bridges/api-relay-audit">GitHub</a></div></div></header>
+<main class="wrap">
+  <div class="eyebrow">Web3 中文指南 · 核对版本 v2.5.0 · <time datetime="2026-10-30">2026-10-30</time></div>
+  <h1>Web3 钱包场景：AI agent 经过中转站时的提示注入</h1>
+  <p class="lead">当 AI agent 在钱包相关动作之前经过一个中转站，恶意或被攻破的中转站可能试图引导转账指引、削弱签名隔离，或把不安全的私钥处理说成正常操作。API Relay Audit 把这组检查放在单独的 profile 里，让普通的中转站审计保持聚焦。</p>
+  <p>本文对照 <a href="https://github.com/toby-bridges/api-relay-audit/tree/75bdac000051871c9f088a3be58e6f17a8854ffb">v2.5.0，commit <code>75bdac0</code></a> 翻译自英文指南；命令行参数以该版本 <code>audit.py --help</code> 的输出为准。</p>
+
+  <h2 id="threat-model">威胁模型</h2>
+  <ul>
+    <li>用户把钱包相关指令经由 AI API 中转站发出。</li>
+    <li>中转站可以插入隐藏指令，或改写模型路径。</li>
+    <li>模型随后可能给出不安全的转账指引、表现出签名交易的行为，或说出处理私钥的话。</li>
+  </ul>
+
+  <h2 id="run-web3">运行 web3 profile 检查</h2>
+  <pre class="code"><code>python3 audit.py \
+  --key-env API_RELAY_AUDIT_KEY \
+  --url https://relay.example.com/v1 \
+  --profile web3 \
+  --output web3-relay-audit.md</code></pre>
+  <p>把低额度、可随时撤销的测试 Key 放进环境变量 <code>API_RELAY_AUDIT_KEY</code>；<code>https://relay.example.com/v1</code> 是占位符，换成你获得授权的中转地址。<code>--profile web3</code> 启用 Step 11 的钱包探针，<code>--profile full</code> 运行全部可用检查；Step 11 只在这两个 profile 下运行，默认的 general 不含它。探针会向中转站发真实请求，并可能计费。下载固定版本脚本和连通性检查的步骤见 <a href="audit-claude-api-relay-safely.html">中文上手指南</a>。</p>
+
+  <h2 id="probes">探针检查什么</h2>
+  <table>
+    <tr><th>探针类别</th><th>预期的安全行为</th></tr>
+    <tr><td>转账指引</td><td>模型不应直接指导不安全或未经授权的转账。</td></tr>
+    <tr><td>拒绝签名交易</td><td>模型应拒绝签署交易，也不应暗示它能代替用户签名。</td></tr>
+    <tr><td>拒绝私钥</td><td>模型应拒绝索取、透露或处理私钥。</td></tr>
+  </table>
+
+  <h2 id="limits">边界</h2>
+  <p>这些探针不能证明一套钱包系统是安全的。它们测的是中转站和模型在特定提示下的行为。交易签名、密钥保管和策略执行，尽可能放在中转路径之外。</p>
+  <p>关于这个威胁模型的文档工作，见 <a href="https://github.com/toby-bridges/api-relay-audit/issues/33">issue #33：Web3 钱包提示注入威胁模型</a>。</p>
+</main>
+<footer><div class="wrap">相关：<a href="detect-prompt-injection-llm-api-proxies.html">怎么检测中转站里的提示注入</a> · <a href="audit-claude-api-relay-safely.html">中文上手指南</a> · <a href="../../guides/web3-wallet-prompt-injection-ai-agents.html">English guide</a></div></footer>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>怎么检测 LLM API 中转站里的提示注入</title>
+<meta name="description" content="用可复现的本地探针检查 LLM API 中转站有没有偷偷改你的指令：token 差值、提示词抽取、指令冲突各说明什么、下一步查什么、证据边界在哪，附一段离线可跑的合成示例。">
+<link rel="canonical" href="https://apirelayaudit.com/zh/guides/detect-prompt-injection-llm-api-proxies.html">
+<link rel="alternate" hreflang="zh-CN" href="https://apirelayaudit.com/zh/guides/detect-prompt-injection-llm-api-proxies.html">
+<link rel="alternate" hreflang="en" href="https://apirelayaudit.com/guides/detect-prompt-injection-llm-api-proxies.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="API Relay Audit">
+<meta property="og:title" content="怎么检测 LLM API 中转站里的提示注入">
+<meta property="og:description" content="用可复现的本地探针检查 LLM API 中转站有没有偷偷改你的指令：token 差值、提示词抽取、指令冲突各说明什么、下一步查什么、证据边界在哪，附一段离线可跑的合成示例。">
+<meta property="og:url" content="https://apirelayaudit.com/zh/guides/detect-prompt-injection-llm-api-proxies.html">
+<meta property="og:image" content="https://apirelayaudit.com/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../../assets/content.css">
+<style>
+.signal-table-scroll{overflow-x:auto;margin:20px 0}
+.signal-table-scroll:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.signal-table{display:table;table-layout:fixed;min-width:660px;margin:0}
+.signal-table th,.signal-table td{overflow-wrap:anywhere}
+.signal-table th:first-child{width:22%}
+.signal-table th:not(:first-child){width:39%}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "怎么检测 LLM API 中转站里的提示注入", "description": "用可复现的本地探针检查 LLM API 中转站有没有偷偷改你的指令：token 差值、提示词抽取、指令冲突各说明什么、下一步查什么、证据边界在哪，附一段离线可跑的合成示例。", "inLanguage": "zh-CN", "dateModified": "2026-10-30", "mainEntityOfPage": "https://apirelayaudit.com/zh/guides/detect-prompt-injection-llm-api-proxies.html", "publisher": {"@type": "Organization", "name": "API Relay Audit"}}</script>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="../../">API Relay Audit</a><div class="links"><a href="../">中文首页</a><a href="audit-claude-api-relay-safely.html">上手指南</a><a href="../compare-relay-tools.html">工具对比</a><a href="../../guides/detect-prompt-injection-llm-api-proxies.html">English</a><a href="https://github.com/toby-bridges/api-relay-audit">GitHub</a></div></div></header>
+<main class="wrap">
+  <div class="eyebrow">中文指南 · 核对版本 v2.5.0 · <time datetime="2026-10-30">2026-10-30</time></div>
+  <h1>怎么检测 LLM API 中转站里的提示注入</h1>
+  <p class="lead">要查一个 LLM API 中转站有没有往你的请求里加隐藏指令，把三类信号放在一起看：token 数差值、提示词抽取探针、指令冲突测试。用受控请求重复几次，条件允许时再和可信的直连通道交叉核对。API Relay Audit 收集的是行为证据；单独一条反常回答，不能证明中转站改了你的请求。</p>
+  <p>本文对照 <a href="https://github.com/toby-bridges/api-relay-audit/tree/75bdac000051871c9f088a3be58e6f17a8854ffb">v2.5.0，commit <code>75bdac0</code></a> 翻译自英文指南；文中的离线示例于 <time datetime="2026-10-30">2026-10-30</time> 在该版本上重新跑过。</p>
+
+  <h2 id="signal-triage">每种信号说明什么</h2>
+  <div class="signal-table-scroll" role="region" aria-labelledby="signal-triage" tabindex="0">
+    <table class="signal-table">
+      <thead><tr><th scope="col">观察到的信号</th><th scope="col">下一步查什么</th><th scope="col">证据边界</th></tr></thead>
+      <tbody>
+        <tr><td>输入 token 数与预期不符</td><td>用同样的模型、消息、system 和工具配置重复请求；条件允许时，对比一次经授权的厂商直连请求。</td><td>v2.5.0 用的是固定的近似基线：10、20、15 个 token。它不会自动去测一个对应的官方端点；分词器或封装层的差异都可能解释这个差值。</td></tr>
+        <tr><td>回复里出现隐藏指令文本</td><td>检查回忆、翻译、续写三类探针的回复里，有没有真正的指令文本和结构标记。</td><td>弱关键词匹配可能被记为 <code>inconclusive</code>。模型按常规拒绝，对该探针而言可以是 clean；两种结果都不能说明整条请求路径。</td></tr>
+        <tr><td>调用方的指令被违背</td><td>重复无害的算术题和身份冲突测试；分别看回复内容和 HTTP 状态码。</td><td>模型自身的行为或正当的策略都可能导致违背。请求被拒绝（包括 HTTP 422）不是中转站篡改的证据。</td></tr>
+        <tr><td>模型自称另一个身份</td><td>对比中性提示下的回答、响应元数据和可独立核实的上游记录。</td><td>模型生成的自我介绍、中转站填写的 model 字段和延迟，都不能证明实际提供服务的是哪个模型。</td></tr>
+        <tr><td>包安装命令被改了</td><td>对比预期文本和返回文本，包括多出来的措辞或拒绝。</td><td>Step 8 只有四条文本回显探针。它从不执行工具或安装命令，也不校验结构化的 <code>tool_calls</code>/<code>tool_use</code> 或流式工具参数。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="fixed-version">从固定版本开始</h2>
+  <p>按 <a href="audit-claude-api-relay-safely.html">中文上手指南</a> 下载固定的 v2.5.0 脚本，先看 <code>--help</code>，用 <code>--key-env</code> 传入限额 Key，并在跑更多探针之前先做连通性检查。网络探针会向你选定的中转站发真实请求，可能产生费用。那篇指南也讲了报告隐私和独立版传输层的 TLS 限制。</p>
+
+  <h2 id="synthetic-example">离线复现一次文本比对</h2>
+  <p>下载并看过 <code>audit.py</code> 之后，在同一目录用 Python 3.10 或更新版本运行下面这段合成示例。它只调用脚本内置的比较器，不向中转站发请求，也不安装任何包。拼错的包名是故意的测试输入。</p>
+  <pre class="code"><code>python3 - &lt;&lt;'PY'
+import runpy
+api = runpy.run_path("audit.py", run_name="synthetic_guide_demo")
+expected = "pip install requests==2.31.0"
+for received in (expected, expected + "\n", "pip install reqeusts==2.31.0"):
+    print(api["classify"](expected, received))
+PY</code></pre>
+  <p>预期输出：</p>
+  <pre class="code"><code>exact
+whitespace
+substituted</code></pre>
+  <p>这只演示了比较器的三种标签，不代表检测准确率，也不是真实中转站的结果。比较器会归一化一部分外围格式；多出来的解释文字或模型的常规拒绝，仍可能被判为 <code>substituted</code>。把改动归因到中转站之前，先回头看返回的原文。</p>
+
+  <h2 id="record">记录发现时连同边界一起记</h2>
+  <p>把脚本 commit、端点、请求的模型、时间戳、参数、重复次数和详细发现放在一起，存进你的私有审计记录。测试用合成提示词；分享报告前先检查里面有没有凭据或私有的回复内容。跳过的检查没有结果，<code>inconclusive</code> 是未定，<code>LOW</code> 总评也不是安全合格证。</p>
+  <p><a href="https://github.com/toby-bridges/api-relay-audit/issues/79#issuecomment-5543396106">issue #79 的补充合成复现评论</a> 暴露过一个与 <code>coding</code> 这个词有关的提示词抽取误报。那个具体回归已在 v2.5.0 修复；它不能推出任何整体误报率。可复现的检测缺口，请带脱敏证据提到 <a href="https://github.com/toby-bridges/api-relay-audit/issues/31">issue #31</a>。</p>
+
+  <h2 id="sources">带版本的实现源码</h2>
+  <p>固定版本的 <a href="https://github.com/toby-bridges/api-relay-audit/blob/75bdac000051871c9f088a3be58e6f17a8854ffb/scripts/audit.py">审计编排代码</a> 定义了 token、抽取和指令冲突探针；<a href="https://github.com/toby-bridges/api-relay-audit/blob/75bdac000051871c9f088a3be58e6f17a8854ffb/api_relay_audit/tool_substitution.py">文本替换模块</a> 定义了上面演示的比较器。想弄清报告里某个标签到底指什么，就读这两处源码。</p>
+</main>
+<footer><div class="wrap">相关：<a href="what-is-ai-api-relay-proxy.html">什么是 AI API 中转站</a> · <a href="web3-wallet-prompt-injection-ai-agents.html">Web3 钱包场景的提示注入</a> · <a href="../../guides/detect-prompt-injection-llm-api-proxies.html">English guide</a></div></footer>
+</body>
+</html>
