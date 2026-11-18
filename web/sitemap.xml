@@ -6,7 +6,7 @@
   </url>
   <url>
     <loc>https://apirelayaudit.com/zh/</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-30</lastmod>
   </url>
   <url>
     <loc>https://apirelayaudit.com/zh/compare-relay-tools.html</loc>
@@ -14,7 +14,7 @@
   </url>
   <url>
     <loc>https://apirelayaudit.com/guides/what-is-ai-api-relay-proxy.html</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-30</lastmod>
   </url>
   <url>
     <loc>https://apirelayaudit.com/guides/audit-claude-api-relay-safely.html</loc>
@@ -26,11 +26,11 @@
   </url>
   <url>
     <loc>https://apirelayaudit.com/guides/detect-prompt-injection-llm-api-proxies.html</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-30</lastmod>
   </url>
   <url>
     <loc>https://apirelayaudit.com/guides/web3-wallet-prompt-injection-ai-agents.html</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-10-30</lastmod>
   </url>
   <url>
     <loc>https://apirelayaudit.com/guides/openclaw-hermes-skill-api-relay-audit.html</loc>
@@ -43,5 +43,17 @@
   <url>
     <loc>https://apirelayaudit.com/zh/guides/audit-claude-api-relay-safely.html</loc>
     <lastmod>2026-10-27</lastmod>
+  </url>
+  <url>
+    <loc>https://apirelayaudit.com/zh/guides/what-is-ai-api-relay-proxy.html</loc>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+  <url>
+    <loc>https://apirelayaudit.com/zh/guides/detect-prompt-injection-llm-api-proxies.html</loc>
+    <lastmod>2026-10-30</lastmod>
+  </url>
+  <url>
+    <loc>https://apirelayaudit.com/zh/guides/web3-wallet-prompt-injection-ai-agents.html</loc>
+    <lastmod>2026-10-30</lastmod>
   </url>
 </urlset>

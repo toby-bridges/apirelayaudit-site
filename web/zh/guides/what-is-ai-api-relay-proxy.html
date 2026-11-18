@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>什么是 AI API 中转站（LLM proxy）？</title>
+<meta name="description" content="AI API 中转站或 LLM proxy 夹在你的应用和模型厂商之间。本文说明它能改动什么、为什么要在本地审计，以及怎样用固定版本 v2.5.0 的脚本审一遍。">
+<link rel="canonical" href="https://apirelayaudit.com/zh/guides/what-is-ai-api-relay-proxy.html">
+<link rel="alternate" hreflang="zh-CN" href="https://apirelayaudit.com/zh/guides/what-is-ai-api-relay-proxy.html">
+<link rel="alternate" hreflang="en" href="https://apirelayaudit.com/guides/what-is-ai-api-relay-proxy.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="API Relay Audit">
+<meta property="og:title" content="什么是 AI API 中转站（LLM proxy）？">
+<meta property="og:description" content="AI API 中转站或 LLM proxy 夹在你的应用和模型厂商之间。本文说明它能改动什么、为什么要在本地审计，以及怎样用固定版本 v2.5.0 的脚本审一遍。">
+<meta property="og:url" content="https://apirelayaudit.com/zh/guides/what-is-ai-api-relay-proxy.html">
+<meta property="og:image" content="https://apirelayaudit.com/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../../assets/content.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "什么是 AI API 中转站（LLM proxy）？", "description": "AI API 中转站或 LLM proxy 夹在你的应用和模型厂商之间。本文说明它能改动什么、为什么要在本地审计，以及怎样用固定版本 v2.5.0 的脚本审一遍。", "inLanguage": "zh-CN", "dateModified": "2026-10-30", "mainEntityOfPage": "https://apirelayaudit.com/zh/guides/what-is-ai-api-relay-proxy.html", "publisher": {"@type": "Organization", "name": "API Relay Audit"}}</script>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="../../">API Relay Audit</a><div class="links"><a href="../">中文首页</a><a href="audit-claude-api-relay-safely.html">上手指南</a><a href="../compare-relay-tools.html">工具对比</a><a href="../../guides/what-is-ai-api-relay-proxy.html">English</a><a href="https://github.com/toby-bridges/api-relay-audit">GitHub</a></div></div></header>
+<main class="wrap">
+  <div class="eyebrow">中文指南 · 核对版本 v2.5.0 · <time datetime="2026-10-30">2026-10-30</time></div>
+  <h1>什么是 AI API 中转站（LLM proxy）？</h1>
+  <p class="lead">AI API 中转站，也叫 LLM proxy、API 代理、网关或镜像，是夹在你的应用和上游模型厂商（例如 Anthropic、OpenAI）之间的第三方服务。它可以转发请求、统一接口格式、计量用量或做路由，但它同样能改掉你收到的提示词、模型、上下文、流式输出或报错内容。</p>
+
+  <section class="note">一句话：中转站是你模型供应链的一环。只要它能读写你的请求，就应该在生产流量或钱包相关流量依赖它之前先审一遍。</section>
+
+  <h2 id="what-changes">中转站能改什么</h2>
+  <div class="grid">
+    <section class="card"><h3>提示词路径</h3><p>中转站可以在你的请求前面加隐藏指令、塞入身份文本、要求模型忽略用户指令，或者在后续回复里把隐藏的提示内容吐出来。</p></section>
+    <section class="card"><h3>模型路径</h3><p>中转站可以把请求转给另一个模型，却在 API 响应里写着你指定的模型名；也可能通过措辞或流式元数据泄露上游模型的身份。</p></section>
+    <section class="card"><h3>工具路径</h3><p>中转站可以在包安装命令或工具样式的输出到达 coding agent 之前改写它们，这就把代理行为变成了供应链风险。</p></section>
+  </div>
+
+  <h2 id="why-local">为什么要在本地审计</h2>
+  <p>网页版检测工具要求你先把中转站的 Key 交给另一个服务，才能测这个中转站。API Relay Audit 省掉了这一道额外的信任环节：脚本在你自己的机器上运行，你的 API Key 只会发给你指定的中转站 URL。</p>
+
+  <h2 id="how-to-audit">怎么审一遍</h2>
+  <p>下载固定版本的脚本，先看帮助信息，再对目标中转站生成一份 Markdown 报告：</p>
+  <pre class="code"><code>curl -fsSL https://raw.githubusercontent.com/toby-bridges/api-relay-audit/75bdac000051871c9f088a3be58e6f17a8854ffb/audit.py -o audit.py
+python3 audit.py --help
+python3 audit.py --key-env API_RELAY_AUDIT_KEY \
+  --url https://relay.example.com/v1 --model YOUR_SUPPORTED_MODEL \
+  --output report.md</code></pre>
+  <p>命令里的 <code>https://relay.example.com/v1</code> 和 <code>YOUR_SUPPORTED_MODEL</code> 是占位符，执行时换成你获得授权的中转地址和它支持的模型代号。测试 Key 请用低额度、可随时撤销的专用 Key，放进环境变量 <code>API_RELAY_AUDIT_KEY</code>，不要写进命令行。探针请求会真实发给中转站，并可能按中转站的规则计费。分阶段的完整操作、连通性检查和报告脱敏，见 <a href="audit-claude-api-relay-safely.html">中文上手指南</a>。</p>
+
+  <h2 id="limits">报告不能证明什么</h2>
+  <p>一次看起来干净的运行不是合格证。中转站可以有条件地改变行为，模型的回答本身可能就模棱两可，不支持的格式会让某一步变成 <code>inconclusive</code>（无法判断）。把报告当成可复现的证据，而不是最终的安全标签。</p>
+</main>
+<footer><div class="wrap">相关：<a href="audit-claude-api-relay-safely.html">中文上手指南</a> · <a href="detect-prompt-injection-llm-api-proxies.html">怎么检测中转站里的提示注入</a> · <a href="../../guides/what-is-ai-api-relay-proxy.html">English guide</a></div></footer>
+</body>
+</html>
